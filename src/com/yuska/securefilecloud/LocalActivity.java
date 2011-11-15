@@ -42,7 +42,7 @@ public class LocalActivity extends ListActivity {
                     dir.add(new Option(ff.getName(),"Folder",ff.getAbsolutePath()));
                 else
                 {
-                    fls.add(new Option(ff.getName(),"File Size: "+ff.length(),ff.getAbsolutePath()));
+                    fls.add(new Option(ff.getName(),"File Size: "+ff.length()+" bytes",ff.getAbsolutePath()));
                 }
              }
          }catch(Exception e)

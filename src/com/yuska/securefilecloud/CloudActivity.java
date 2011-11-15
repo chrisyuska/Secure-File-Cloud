@@ -50,7 +50,7 @@ public class CloudActivity extends ListActivity {
 		for (int i = 0; i < nodes.getLength(); i++) {							
 			Element e = (Element)nodes.item(i);
         	
-        	fls.add(new Option(XMLfunctions.getValue(e, "name"),XMLfunctions.getValue(e, "size"),XMLfunctions.getValue(e, "location")));
+        	fls.add(new Option(XMLfunctions.getValue(e, "name"),"File Size: "+XMLfunctions.getValue(e, "size")+" bytes",XMLfunctions.getValue(e, "location")));
 		}
 		
 		Collections.sort(fls);
