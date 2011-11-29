@@ -78,7 +78,7 @@ public class XMLfunctions {
 				DefaultHttpClient httpClient = new DefaultHttpClient();
 				
 				//TODO: Currently hard coded.  Add as option if have time?
-				HttpPost httpPost = new HttpPost("http://chrisyuska.com/cse651/list");
+				HttpPost httpPost = new HttpPost("http://chrisyuska.com/cse651/list.php");
 				
 				HttpResponse httpResponse = httpClient.execute(httpPost);
 				HttpEntity httpEntity = httpResponse.getEntity();
