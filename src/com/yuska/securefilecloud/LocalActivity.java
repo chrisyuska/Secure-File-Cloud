@@ -1,8 +1,11 @@
 package com.yuska.securefilecloud;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -20,14 +23,21 @@ import android.widget.Toast;
 public class LocalActivity extends ListActivity {
 	private File currentDir;
 	private FileArrayAdapter adapter;
-	private Toast test;
 	private Option o;
+	private Toast test;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         currentDir = new File("/sdcard/");
+        fill(currentDir);
+    }
+	
+	@Override
+    protected void onResume() {
+        super.onResume();
+
         fill(currentDir);
     }
 	
@@ -78,8 +88,7 @@ public class LocalActivity extends ListActivity {
 
 	private void onFileClick()
     {
-		//Just creating Toast for now until we actually upload files
-		test = Toast.makeText(this, "File Clicked: "+o.getName(), Toast.LENGTH_SHORT);
+		test = Toast.makeText(this, "Uploading "+o.getName()+"...", Toast.LENGTH_SHORT);
 		
 		//Build alert dialog box to confirm upload
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -88,9 +97,9 @@ public class LocalActivity extends ListActivity {
 		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 		    	   
 		           public void onClick(DialogInterface dialog, int id) {
-		                //TODO: Actually upload file instead of just showing Toast
-		        	   uploadFile();
 		        	   test.show();
+		        	   uploadFile();
+		        	   
 		           }
 		       })
 		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -106,72 +115,83 @@ public class LocalActivity extends ListActivity {
 	
 	private void uploadFile()
 	{
-	   HttpURLConnection connection = null;
- 	   DataOutputStream outputStream = null;
- 	   
- 	   String pathToOurFile = o.getPath(); // Is this the relative or absolute path??
- 	   String urlServer = "http://chrisyuska.com/cse651/xyz.php";
- 	   String lineEnd = "\r\n";
- 	   String twoHyphens = "--";
- 	   String boundary =  "*****";
+		HttpURLConnection connection = null;
+		DataOutputStream outputStream = null;
+	   
+		String pathToOurFile = o.getPath(); // Is this the relative or absolute path??
+		String urlServer = "http://chrisyuska.com/cse651/upload.php";
+		String lineEnd = "\r\n";
+		String twoHyphens = "--";
+		String boundary =  "*****";
+	
+		int bytesRead, bytesAvailable, bufferSize;
+		byte[] buffer;
+		int maxBufferSize = 1*1024*1024;
+	
+		try
+		{
+			FileInputStream fileInputStream = new FileInputStream(new File(pathToOurFile) );
+	
+			URL url = new URL(urlServer);
+			connection = (HttpURLConnection) url.openConnection();
+	
+			// Allow Inputs & Outputs
+			connection.setDoInput(true);
+			connection.setDoOutput(true);
+			connection.setUseCaches(false);
+		
+			// Enable POST method
+			connection.setRequestMethod("POST");
+		
+			connection.setRequestProperty("Connection", "Keep-Alive");
+			connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
+	
+			outputStream = new DataOutputStream( connection.getOutputStream() );
+			outputStream.writeBytes(twoHyphens + boundary + lineEnd);
+			outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + o.getName() +"\"" + lineEnd);
+			outputStream.writeBytes(lineEnd);
+	
+			bytesAvailable = fileInputStream.available();
+			bufferSize = Math.min(bytesAvailable, maxBufferSize);
+			buffer = new byte[bufferSize];
+	
+			// Read file
+			bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+	
+			while (bytesRead > 0) {
+				outputStream.write(buffer, 0, bufferSize);
+				bytesAvailable = fileInputStream.available();
+				bufferSize = Math.min(bytesAvailable, maxBufferSize);
+				bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+			}
+	
+			outputStream.writeBytes(lineEnd);
+			outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+	
+			/* Responses from the server (code and message)
+	   		serverResponseCode = connection.getResponseCode();
+	   		serverResponseMessage = connection.getResponseMessage();
+			*/
+	
+			fileInputStream.close();
+			outputStream.flush();
+			outputStream.close();
+		}
+		catch (Exception ex) {
+			//Exception handling
+			Toast.makeText(this, "Exception: "+ex.getMessage(), Toast.LENGTH_LONG).show();
+	   	}
+		try {
+            BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line, out = "";
+            while ((line = rd.readLine()) != null) {
+            	out+=line;
+            }
+            rd.close();
+            Toast.makeText(this, out, Toast.LENGTH_SHORT).show();
 
- 	   int bytesRead, bytesAvailable, bufferSize;
- 	   byte[] buffer;
- 	   int maxBufferSize = 1*1024*1024;
-
- 	   try
- 	   {
- 	   FileInputStream fileInputStream = new FileInputStream(new File(pathToOurFile) );
-
- 	   URL url = new URL(urlServer);
- 	   connection = (HttpURLConnection) url.openConnection();
-
- 	   // Allow Inputs & Outputs
- 	   connection.setDoInput(true);
- 	   connection.setDoOutput(true);
- 	   connection.setUseCaches(false);
-
- 	   // Enable POST method
- 	   connection.setRequestMethod("POST");
-
- 	   connection.setRequestProperty("Connection", "Keep-Alive");
- 	   connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
-
- 	   outputStream = new DataOutputStream( connection.getOutputStream() );
- 	   outputStream.writeBytes(twoHyphens + boundary + lineEnd);
- 	   outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + pathToOurFile +"\"" + lineEnd);
- 	   outputStream.writeBytes(lineEnd);
-
- 	   bytesAvailable = fileInputStream.available();
- 	   bufferSize = Math.min(bytesAvailable, maxBufferSize);
- 	   buffer = new byte[bufferSize];
-
- 	   // Read file
- 	   bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-
- 	   while (bytesRead > 0)
- 	   {
- 	   outputStream.write(buffer, 0, bufferSize);
- 	   bytesAvailable = fileInputStream.available();
- 	   bufferSize = Math.min(bytesAvailable, maxBufferSize);
- 	   bytesRead = fileInputStream.read(buffer, 0, bufferSize);
- 	   }
-
- 	   outputStream.writeBytes(lineEnd);
- 	   outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-
- 	   /* Responses from the server (code and message)
- 	   serverResponseCode = connection.getResponseCode();
- 	   serverResponseMessage = connection.getResponseMessage();
- 	   */
-
- 	   fileInputStream.close();
- 	   outputStream.flush();
- 	   outputStream.close();
- 	   }
- 	   catch (Exception ex)
- 	   {
- 	   //Exception handling
- 	   }
+        } catch (IOException ex) {
+        	Toast.makeText(this, "IO Exception: "+ex.getMessage(), Toast.LENGTH_LONG).show();
+        }
 	}
 }

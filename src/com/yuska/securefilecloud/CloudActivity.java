@@ -78,7 +78,7 @@ public class CloudActivity extends ListActivity {
 	private void onFileClick()
     {
 		//Just creating Toast for now until we actually download files
-		test = Toast.makeText(this, "File Clicked: "+o.getName(), Toast.LENGTH_SHORT);
+		test = Toast.makeText(this, "Downloading "+o.getName()+"...", Toast.LENGTH_SHORT);
 		
 		//Build alert dialog box to confirm download
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -111,7 +111,7 @@ public class CloudActivity extends ListActivity {
 	    //new File("/sdcard/").mkdirs();
 
 	        try {
-	            URL fileUrl = new URL("http://chrisyuska.com/cse651/filecloud/" + o.getName());
+	            URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?filename=" + o.getName());
 	            InputStream in = fileUrl.openStream();
 	            OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
 
