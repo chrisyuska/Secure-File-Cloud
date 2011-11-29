@@ -19,6 +19,7 @@ import org.w3c.dom.NodeList;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -88,7 +89,8 @@ public class CloudActivity extends ListActivity {
 		           public void onClick(DialogInterface dialog, int id) {
 		                //TODO: Actually download file instead of just showing Toast
 		        	   test.show();
-		        	   downloadFile();
+		        	   new DownloadFileTask().execute(o);
+		        	   //downloadFile();
 		           }
 		       })
 		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -102,32 +104,31 @@ public class CloudActivity extends ListActivity {
 		alert.show();
     }
 	
-	private void downloadFile()
-	{
+	private class DownloadFileTask extends AsyncTask<Option, Integer, String> {
+		protected String doInBackground(Option... options) {
+			File newFile = new File("/sdcard/" + options[0].getName());
 
-	    File newFile = new File("/sdcard/" + o.getName());
+		    try {
+		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?filename=" + options[0].getName());
+		    	InputStream in = fileUrl.openStream();
+		    	OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
 
-	    // Create directories
-	    //new File("/sdcard/").mkdirs();
-
-	    try {
-	    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?filename=" + o.getName());
-	    	InputStream in = fileUrl.openStream();
-	    	OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
-
-	    	for (int b; (b = in.read()) != -1;) {
-	    		out.write(b);
-	    	}
-	    	out.close();
-	    	in.close();
-	    	Toast.makeText(this, "Download Complete", Toast.LENGTH_SHORT).show();
-	    } catch (MalformedURLException e) {
-	    	newFile = null;
-	    	Toast.makeText(this, "Error: "+e.getMessage(), Toast.LENGTH_SHORT).show();
-	    } catch (IOException e) {
-	    	newFile = null;
-	    	Toast.makeText(this, "IOException: "+e.getMessage(), Toast.LENGTH_SHORT).show();
-	    }
-}
-	
+		    	for (int b; (b = in.read()) != -1;) {
+		    		out.write(b);
+		    	}
+		    	out.close();
+		    	in.close();
+		    	return "Download Complete";
+		    } catch (MalformedURLException e) {
+		    	newFile = null;
+		    	return "Error: "+e.getMessage();
+		    } catch (IOException e) {
+		    	newFile = null;
+		    	return "IOException: "+e.getMessage();
+		    }
+		}
+		protected void onPostExecute(String str) {
+			Toast.makeText(CloudActivity.this, str, Toast.LENGTH_SHORT).show();
+		}
+	}
 }
