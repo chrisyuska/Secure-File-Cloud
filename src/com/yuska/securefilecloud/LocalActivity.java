@@ -1,6 +1,10 @@
 package com.yuska.securefilecloud;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +21,7 @@ public class LocalActivity extends ListActivity {
 	private File currentDir;
 	private FileArrayAdapter adapter;
 	private Toast test;
+	private Option o;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,16 +67,16 @@ public class LocalActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		Option o = adapter.getItem(position);
+		o = adapter.getItem(position);
 		if(o.getData().equalsIgnoreCase("folder")||o.getData().equalsIgnoreCase("parent directory")){
 				currentDir = new File(o.getPath());
 				fill(currentDir);
 		} else {
-			onFileClick(o);
+			onFileClick();
 		}
 	}
 
-	private void onFileClick(Option o)
+	private void onFileClick()
     {
 		//Just creating Toast for now until we actually upload files
 		test = Toast.makeText(this, "File Clicked: "+o.getName(), Toast.LENGTH_SHORT);
@@ -81,8 +86,10 @@ public class LocalActivity extends ListActivity {
 		builder.setMessage("Upload " + o.getName() + "?")
 		       .setCancelable(false)
 		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		    	   
 		           public void onClick(DialogInterface dialog, int id) {
 		                //TODO: Actually upload file instead of just showing Toast
+		        	   uploadFile();
 		        	   test.show();
 		           }
 		       })
@@ -96,4 +103,75 @@ public class LocalActivity extends ListActivity {
 		//Show alert dialog
 		alert.show();
     }
+	
+	private void uploadFile()
+	{
+	   HttpURLConnection connection = null;
+ 	   DataOutputStream outputStream = null;
+ 	   
+ 	   String pathToOurFile = o.getPath(); // Is this the relative or absolute path??
+ 	   String urlServer = "http://chrisyuska.com/cse651/xyz.php";
+ 	   String lineEnd = "\r\n";
+ 	   String twoHyphens = "--";
+ 	   String boundary =  "*****";
+
+ 	   int bytesRead, bytesAvailable, bufferSize;
+ 	   byte[] buffer;
+ 	   int maxBufferSize = 1*1024*1024;
+
+ 	   try
+ 	   {
+ 	   FileInputStream fileInputStream = new FileInputStream(new File(pathToOurFile) );
+
+ 	   URL url = new URL(urlServer);
+ 	   connection = (HttpURLConnection) url.openConnection();
+
+ 	   // Allow Inputs & Outputs
+ 	   connection.setDoInput(true);
+ 	   connection.setDoOutput(true);
+ 	   connection.setUseCaches(false);
+
+ 	   // Enable POST method
+ 	   connection.setRequestMethod("POST");
+
+ 	   connection.setRequestProperty("Connection", "Keep-Alive");
+ 	   connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
+
+ 	   outputStream = new DataOutputStream( connection.getOutputStream() );
+ 	   outputStream.writeBytes(twoHyphens + boundary + lineEnd);
+ 	   outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + pathToOurFile +"\"" + lineEnd);
+ 	   outputStream.writeBytes(lineEnd);
+
+ 	   bytesAvailable = fileInputStream.available();
+ 	   bufferSize = Math.min(bytesAvailable, maxBufferSize);
+ 	   buffer = new byte[bufferSize];
+
+ 	   // Read file
+ 	   bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+ 	   while (bytesRead > 0)
+ 	   {
+ 	   outputStream.write(buffer, 0, bufferSize);
+ 	   bytesAvailable = fileInputStream.available();
+ 	   bufferSize = Math.min(bytesAvailable, maxBufferSize);
+ 	   bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+ 	   }
+
+ 	   outputStream.writeBytes(lineEnd);
+ 	   outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+ 	   /* Responses from the server (code and message)
+ 	   serverResponseCode = connection.getResponseCode();
+ 	   serverResponseMessage = connection.getResponseMessage();
+ 	   */
+
+ 	   fileInputStream.close();
+ 	   outputStream.flush();
+ 	   outputStream.close();
+ 	   }
+ 	   catch (Exception ex)
+ 	   {
+ 	   //Exception handling
+ 	   }
+	}
 }

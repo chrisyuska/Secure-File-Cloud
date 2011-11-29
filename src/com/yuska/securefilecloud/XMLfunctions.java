@@ -77,7 +77,7 @@ public class XMLfunctions {
 				
 				DefaultHttpClient httpClient = new DefaultHttpClient();
 				
-				//TODO: Currently hardcoded.  Add as option if have time?
+				//TODO: Currently hard coded.  Add as option if have time?
 				HttpPost httpPost = new HttpPost("http://chrisyuska.com/cse651/list");
 				
 				HttpResponse httpResponse = httpClient.execute(httpPost);

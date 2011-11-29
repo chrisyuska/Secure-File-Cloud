@@ -1,5 +1,13 @@
 package com.yuska.securefilecloud;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,6 +27,7 @@ import android.widget.Toast;
 public class CloudActivity extends ListActivity {
 	private FileArrayAdapter adapter;
 	private Toast test;
+	private Option o;
 	
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,11 +71,11 @@ public class CloudActivity extends ListActivity {
     @Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		Option o = adapter.getItem(position);
-		onFileClick(o);
+		o = adapter.getItem(position);
+		onFileClick();
 	}
 
-	private void onFileClick(Option o)
+	private void onFileClick()
     {
 		//Just creating Toast for now until we actually download files
 		test = Toast.makeText(this, "File Clicked: "+o.getName(), Toast.LENGTH_SHORT);
@@ -78,6 +87,7 @@ public class CloudActivity extends ListActivity {
 		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
 		                //TODO: Actually download file instead of just showing Toast
+		        	   downloadFile();
 		        	   test.show();
 		           }
 		       })
@@ -91,4 +101,31 @@ public class CloudActivity extends ListActivity {
 		//Show alert dialog
 		alert.show();
     }
+	
+	private void downloadFile()
+	{
+
+	    File newFile = new File("/sdcard/" + o.getName());
+
+	    // Create directories
+	    //new File("/sdcard/").mkdirs();
+
+	        try {
+	            URL fileUrl = new URL("http://chrisyuska.com/cse651/filecloud/" + o.getName());
+	            InputStream in = fileUrl.openStream();
+	            OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
+
+	            for (int b; (b = in.read()) != -1;) {
+	                out.write(b);
+	            }
+	            out.close();
+	            in.close();
+	        } catch (MalformedURLException e) {
+	        	newFile = null;
+	        } catch (IOException e) {
+	        	newFile = null;
+	        }
+	    
+	}
+	
 }
