@@ -11,10 +11,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -98,8 +98,8 @@ public class LocalActivity extends ListActivity {
 		    	   
 		           public void onClick(DialogInterface dialog, int id) {
 		        	   test.show();
-		        	   uploadFile();
-		        	   
+		        	   //uploadFile();
+		        	   new UploadFileTask().execute(o);
 		           }
 		       })
 		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -113,12 +113,12 @@ public class LocalActivity extends ListActivity {
 		alert.show();
     }
 	
-	private void uploadFile()
+	private String uploadFile(Option option)
 	{
 		HttpURLConnection connection = null;
 		DataOutputStream outputStream = null;
 	   
-		String pathToOurFile = o.getPath(); // Is this the relative or absolute path??
+		String pathToOurFile = option.getPath(); // Is this the relative or absolute path??
 		String urlServer = "http://chrisyuska.com/cse651/upload.php";
 		String lineEnd = "\r\n";
 		String twoHyphens = "--";
@@ -148,7 +148,7 @@ public class LocalActivity extends ListActivity {
 	
 			outputStream = new DataOutputStream( connection.getOutputStream() );
 			outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-			outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + o.getName() +"\"" + lineEnd);
+			outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + option.getName() +"\"" + lineEnd);
 			outputStream.writeBytes(lineEnd);
 	
 			bytesAvailable = fileInputStream.available();
@@ -179,7 +179,7 @@ public class LocalActivity extends ListActivity {
 		}
 		catch (Exception ex) {
 			//Exception handling
-			Toast.makeText(this, "Exception: "+ex.getMessage(), Toast.LENGTH_LONG).show();
+			return "Exception: "+ex.getMessage();
 	   	}
 		try {
             BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -188,10 +188,19 @@ public class LocalActivity extends ListActivity {
             	out+=line;
             }
             rd.close();
-            Toast.makeText(this, out, Toast.LENGTH_SHORT).show();
+            return out;
 
         } catch (IOException ex) {
-        	Toast.makeText(this, "IO Exception: "+ex.getMessage(), Toast.LENGTH_LONG).show();
+        	return "IO Exception: "+ex.getMessage();
         }
+	}
+	
+	private class UploadFileTask extends AsyncTask<Option, Integer, String> {
+		protected String doInBackground(Option... options) {
+			return uploadFile(options[0]);
+		}
+		protected void onPostExecute(String str) {
+			Toast.makeText(LocalActivity.this, str, Toast.LENGTH_SHORT).show();
+		}
 	}
 }
