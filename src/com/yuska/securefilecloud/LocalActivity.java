@@ -24,7 +24,7 @@ public class LocalActivity extends ListActivity {
 	private File currentDir;
 	private FileArrayAdapter adapter;
 	private Option o;
-	private Toast test;
+	private Toast dlg;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,7 +88,7 @@ public class LocalActivity extends ListActivity {
 
 	private void onFileClick()
     {
-		test = Toast.makeText(this, "Uploading "+o.getName()+"...", Toast.LENGTH_SHORT);
+		dlg = Toast.makeText(this, "Uploading "+o.getName()+"...", Toast.LENGTH_SHORT);
 		
 		//Build alert dialog box to confirm upload
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -97,7 +97,7 @@ public class LocalActivity extends ListActivity {
 		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 		    	   
 		           public void onClick(DialogInterface dialog, int id) {
-		        	   test.show();
+		        	   dlg.show();
 		        	   //uploadFile();
 		        	   new UploadFileTask().execute(o);
 		           }
@@ -200,7 +200,9 @@ public class LocalActivity extends ListActivity {
 			return uploadFile(options[0]);
 		}
 		protected void onPostExecute(String str) {
-			Toast.makeText(LocalActivity.this, str, Toast.LENGTH_SHORT).show();
+			dlg.setText(str);
+			dlg.setDuration(Toast.LENGTH_SHORT);
+			dlg.show();
 		}
 	}
 }

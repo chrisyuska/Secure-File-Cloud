@@ -68,6 +68,7 @@ public class CloudActivity extends ListActivity {
         int numResults = XMLfunctions.numResults(doc);
         
         if((numResults <= 0)){
+        	dlg.cancel();
         	Toast.makeText(this, xml, Toast.LENGTH_LONG).show();
         }
                 
@@ -95,6 +96,7 @@ public class CloudActivity extends ListActivity {
 	private void onFileClick()
     {
 		//Just creating Toast for now until we actually download files
+		dlg.cancel();
 		dlg = Toast.makeText(this, "Downloading "+o.getName()+"...", Toast.LENGTH_SHORT);
 		
 		//Build alert dialog box to confirm download
@@ -142,7 +144,9 @@ public class CloudActivity extends ListActivity {
 		    }
 		}
 		protected void onPostExecute(String str) {
-			Toast.makeText(CloudActivity.this, str, Toast.LENGTH_SHORT).show();
+			dlg.setText(str);
+			dlg.setDuration(Toast.LENGTH_SHORT);
+			dlg.show();
 		}
 	}
 }
