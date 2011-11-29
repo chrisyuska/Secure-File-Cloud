@@ -27,26 +27,42 @@ import android.widget.Toast;
 
 public class CloudActivity extends ListActivity {
 	private FileArrayAdapter adapter;
-	private Toast test;
+	private Toast dlg;
 	private Option o;
 	
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
        
-        fill();
+        getXML();
     }
     
     @Override
     protected void onResume() {
         super.onResume();
 
-        fill();
+        getXML();
     }
     
-    private void fill(){
+    private void getXML() {
+    	dlg = Toast.makeText(this, "Downloading list...", Toast.LENGTH_SHORT);
+    	dlg.show();
+    	new FillTask().execute();
+    }
+    
+    private class FillTask extends AsyncTask<Object, Integer, String> {
+		protected String doInBackground(Object... objects) {
+			return XMLfunctions.getXML();
+		}
+		protected void onPostExecute(String xml) {
+			fill(xml);
+			//bug: cancel only registers after first time populating for some reason
+			dlg.cancel();
+		}
+    }
+    
+    private void fill(String xml){
     	List<Option>fls = new ArrayList<Option>();
-        
-        String xml = XMLfunctions.getXML();
+    	
         Document doc = XMLfunctions.XMLfromString(xml);
         
         int numResults = XMLfunctions.numResults(doc);
@@ -79,7 +95,7 @@ public class CloudActivity extends ListActivity {
 	private void onFileClick()
     {
 		//Just creating Toast for now until we actually download files
-		test = Toast.makeText(this, "Downloading "+o.getName()+"...", Toast.LENGTH_SHORT);
+		dlg = Toast.makeText(this, "Downloading "+o.getName()+"...", Toast.LENGTH_SHORT);
 		
 		//Build alert dialog box to confirm download
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -87,10 +103,8 @@ public class CloudActivity extends ListActivity {
 		       .setCancelable(false)
 		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
-		                //TODO: Actually download file instead of just showing Toast
-		        	   test.show();
+		        	   dlg.show();
 		        	   new DownloadFileTask().execute(o);
-		        	   //downloadFile();
 		           }
 		       })
 		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
