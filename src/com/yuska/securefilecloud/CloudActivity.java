@@ -87,8 +87,8 @@ public class CloudActivity extends ListActivity {
 		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
 		                //TODO: Actually download file instead of just showing Toast
-		        	   downloadFile();
 		        	   test.show();
+		        	   downloadFile();
 		           }
 		       })
 		       .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -110,22 +110,24 @@ public class CloudActivity extends ListActivity {
 	    // Create directories
 	    //new File("/sdcard/").mkdirs();
 
-	        try {
-	            URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?filename=" + o.getName());
-	            InputStream in = fileUrl.openStream();
-	            OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
+	    try {
+	    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?filename=" + o.getName());
+	    	InputStream in = fileUrl.openStream();
+	    	OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
 
-	            for (int b; (b = in.read()) != -1;) {
-	                out.write(b);
-	            }
-	            out.close();
-	            in.close();
-	        } catch (MalformedURLException e) {
-	        	newFile = null;
-	        } catch (IOException e) {
-	        	newFile = null;
-	        }
-	    
-	}
+	    	for (int b; (b = in.read()) != -1;) {
+	    		out.write(b);
+	    	}
+	    	out.close();
+	    	in.close();
+	    	Toast.makeText(this, "Download Complete", Toast.LENGTH_SHORT).show();
+	    } catch (MalformedURLException e) {
+	    	newFile = null;
+	    	Toast.makeText(this, "Error: "+e.getMessage(), Toast.LENGTH_SHORT).show();
+	    } catch (IOException e) {
+	    	newFile = null;
+	    	Toast.makeText(this, "IOException: "+e.getMessage(), Toast.LENGTH_SHORT).show();
+	    }
+}
 	
 }
