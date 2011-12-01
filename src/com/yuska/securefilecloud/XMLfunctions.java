@@ -70,19 +70,21 @@ public class XMLfunctions {
 	     return "";
 	 }
 		 
-	 public static String getXML(){	 
+	 public static String getXML(String user){
+		 	
 			String line = null;
 
 			try {
 				
 				DefaultHttpClient httpClient = new DefaultHttpClient();
 				
-				//TODO: Currently hard coded.  Add as option if have time?
-				HttpPost httpPost = new HttpPost("http://chrisyuska.com/cse651/list.php");
+				HttpPost httpPost = new HttpPost("http://chrisyuska.com/cse651/list.php?user="+user);
 				
 				HttpResponse httpResponse = httpClient.execute(httpPost);
 				HttpEntity httpEntity = httpResponse.getEntity();
 				line = EntityUtils.toString(httpEntity);
+				
+				//decrypt line
 				
 			} catch (UnsupportedEncodingException e) {
 				line = "<results status=\"error\"><msg>Can't connect to server</msg></results>";

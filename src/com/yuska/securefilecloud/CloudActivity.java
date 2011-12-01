@@ -21,6 +21,7 @@ import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -33,25 +34,34 @@ public class CloudActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
        
-        getXML();
+        getXML(SecureFileCloudActivity.user);
     }
     
     @Override
     protected void onResume() {
         super.onResume();
 
-        getXML();
+        getXML(SecureFileCloudActivity.user);
     }
     
-    private void getXML() {
+    private void getXML(String user) {
     	dlg = Toast.makeText(this, "Downloading list...", Toast.LENGTH_SHORT);
     	dlg.show();
-    	new FillTask().execute();
+    	new FillTask().execute(user);
     }
     
-    private class FillTask extends AsyncTask<Object, Integer, String> {
-		protected String doInBackground(Object... objects) {
-			return XMLfunctions.getXML();
+    private class FillTask extends AsyncTask<String, Integer, String> {
+		protected String doInBackground(String... strings) {
+			String encrypted = XMLfunctions.getXML(strings[0]);
+
+			MCrypt mcrypt = new MCrypt("Buckeyes12345678"); //hard coded password right now
+			
+			try {
+				return new String(mcrypt.decrypt(encrypted));
+			} catch (Exception e) {
+				//TODO: catch exception
+				return e.getMessage();
+			}
 		}
 		protected void onPostExecute(String xml) {
 			fill(xml);
@@ -65,25 +75,30 @@ public class CloudActivity extends ListActivity {
     	
         Document doc = XMLfunctions.XMLfromString(xml);
         
-        int numResults = XMLfunctions.numResults(doc);
-        
-        if((numResults <= 0)){
+        try {
+		    int numResults = XMLfunctions.numResults(doc);
+		    
+		    if((numResults <= 0)){
+		    	dlg.cancel();
+		    	Toast.makeText(this, xml, Toast.LENGTH_LONG).show();
+		    }
+		            
+			NodeList nodes = doc.getElementsByTagName("result");
+						
+			for (int i = 0; i < nodes.getLength(); i++) {							
+				Element e = (Element)nodes.item(i);
+		    	
+		    	fls.add(new Option(XMLfunctions.getValue(e, "name"),"File Size: "+XMLfunctions.getValue(e, "size")+" bytes",XMLfunctions.getValue(e, "location")));
+			}
+			
+			Collections.sort(fls);
+			
+			adapter = new FileArrayAdapter(CloudActivity.this,R.layout.file_view,fls);
+			this.setListAdapter(adapter);
+        } catch (Exception e) {
         	dlg.cancel();
-        	Toast.makeText(this, xml, Toast.LENGTH_LONG).show();
+	    	Toast.makeText(this, "There was an error parsing the xml", Toast.LENGTH_LONG).show();
         }
-                
-		NodeList nodes = doc.getElementsByTagName("result");
-					
-		for (int i = 0; i < nodes.getLength(); i++) {							
-			Element e = (Element)nodes.item(i);
-        	
-        	fls.add(new Option(XMLfunctions.getValue(e, "name"),"File Size: "+XMLfunctions.getValue(e, "size")+" bytes",XMLfunctions.getValue(e, "location")));
-		}
-		
-		Collections.sort(fls);
-		
-		adapter = new FileArrayAdapter(CloudActivity.this,R.layout.file_view,fls);
-		this.setListAdapter(adapter);
     }
     
     @Override
