@@ -23,6 +23,7 @@
         </activity>
         <activity android:name="CloudActivity"></activity>
         <activity android:name="LocalActivity"></activity>
+        <activity android:name="Settings"></activity>
     </application>
 
 </manifest>
