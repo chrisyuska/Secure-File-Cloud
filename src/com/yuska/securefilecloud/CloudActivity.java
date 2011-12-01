@@ -140,7 +140,7 @@ public class CloudActivity extends ListActivity {
 			File newFile = new File("/sdcard/" + options[0].getName());
 
 		    try {
-		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?filename=" + options[0].getName());
+		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?user="+SecureFileCloudActivity.user+"&filename=" + options[0].getName());
 		    	InputStream in = fileUrl.openStream();
 		    	OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
 

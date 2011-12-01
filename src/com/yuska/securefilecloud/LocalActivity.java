@@ -119,7 +119,7 @@ public class LocalActivity extends ListActivity {
 		DataOutputStream outputStream = null;
 	   
 		String pathToOurFile = option.getPath(); // Is this the relative or absolute path??
-		String urlServer = "http://chrisyuska.com/cse651/upload.php";
+		String urlServer = "http://chrisyuska.com/cse651/upload.php?user="+SecureFileCloudActivity.user;
 		String lineEnd = "\r\n";
 		String twoHyphens = "--";
 		String boundary =  "*****";
