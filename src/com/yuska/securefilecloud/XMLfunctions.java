@@ -71,11 +71,9 @@ public class XMLfunctions {
 	 }
 		 
 	 public static String getXML(String user){
-		 	
 			String line = null;
 
 			try {
-				
 				DefaultHttpClient httpClient = new DefaultHttpClient();
 				
 				HttpPost httpPost = new HttpPost("http://chrisyuska.com/cse651/list.php?user="+user);
@@ -83,9 +81,6 @@ public class XMLfunctions {
 				HttpResponse httpResponse = httpClient.execute(httpPost);
 				HttpEntity httpEntity = httpResponse.getEntity();
 				line = EntityUtils.toString(httpEntity);
-				
-				//decrypt line
-				
 			} catch (UnsupportedEncodingException e) {
 				line = "<results status=\"error\"><msg>Can't connect to server</msg></results>";
 			} catch (MalformedURLException e) {
@@ -95,7 +90,6 @@ public class XMLfunctions {
 			}
 
 			return line;
-
 	}
 	 
 	public static int numResults(Document doc){		

@@ -1,11 +1,8 @@
 package com.yuska.securefilecloud;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -93,7 +90,6 @@ public class MCrypt {
                 return str;
         }
         
-                
         public static byte[] hexToBytes(String str) {
                 if (str==null) {
                         return null;
@@ -108,8 +104,6 @@ public class MCrypt {
                         return buffer;
                 }
         }
-        
-        
 
         private static String padString(String source)
         {

@@ -128,10 +128,6 @@ public class LocalActivity extends ListActivity {
 		String twoHyphens = "--";
 		String boundary =  "*****";
 	
-		//int bytesRead, bytesAvailable, bufferSize;
-		//byte[] buffer;
-		//int maxBufferSize = 1*1024*1024;
-	
 		try
 		{
 			FileInputStream fileInputStream = new FileInputStream(new File(pathToOurFile) );
@@ -148,17 +144,10 @@ public class LocalActivity extends ListActivity {
 			connection.setRequestMethod("POST");
 			connection.setRequestProperty("Connection", "Keep-Alive");
 			connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
-			//String str = twoHyphens + boundary + lineEnd;
 			outputStream = new DataOutputStream( connection.getOutputStream() );
 			outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-			//str += "Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + option.getName() +"\"" + lineEnd;
 			outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + option.getName() +"\"" + lineEnd);
-			//str += lineEnd;
 			outputStream.writeBytes(lineEnd);
-	
-			//bytesAvailable = fileInputStream.available();
-			//bufferSize = Math.min(bytesAvailable, maxBufferSize);
-			//buffer = new byte[bufferSize];
 	
 			ByteArrayBuffer buf = new ByteArrayBuffer(1);
 	    	for (int b; (b = fileInputStream.read()) != -1;) {
@@ -168,46 +157,14 @@ public class LocalActivity extends ListActivity {
 	    	MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass);
 	    	
 	    	try {
-	    		//Log.e("Enc", new String(mcrypt.encrypt(new String(buf.toByteArray()))));
 	    		Log.e("Length",Integer.toString(new String(mcrypt.encrypt(new String(buf.toByteArray()))).length()));
-	    		//str += new String(mcrypt.encrypt(new String(buf.toByteArray())));
 	    		outputStream.writeBytes(new String(mcrypt.encrypt(new String(buf.toByteArray()))));
 	    	} catch (Exception e) {
 	    		//Catch exception
 	    	}
 			
-			/*// Read file
-			bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-			String fileStr = "";
-			
-			while (bytesRead > 0) {
-				outputStream.write(buffer, 0, bufferSize);
-				fileStr += new String(buffer);
-				bytesAvailable = fileInputStream.available();
-				bufferSize = Math.min(bytesAvailable, maxBufferSize);
-				bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-			}
-			
-			MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass); //hard coded password right now
-			Log.e("Contents", fileStr);
-			
-			try {
-				//outputStream.writeBytes(new String(mcrypt.encrypt(fileStr)));
-			} catch (Exception e) {
-				//TODO: catch exception
-				return e.getMessage();
-			}*/
-			//str += lineEnd;
 			outputStream.writeBytes(lineEnd);
-			//str += twoHyphens + boundary + twoHyphens + lineEnd;
 			outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-	
-			//Log.e("Form", str);
-			
-			/* Responses from the server (code and message)
-	   		serverResponseCode = connection.getResponseCode();
-	   		serverResponseMessage = connection.getResponseMessage();
-			*/
 	
 			fileInputStream.close();
 			outputStream.flush();
