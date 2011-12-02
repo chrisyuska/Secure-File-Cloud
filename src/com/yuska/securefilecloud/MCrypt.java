@@ -54,7 +54,7 @@ public class MCrypt {
                         throw new Exception("[encrypt] " + e.getMessage());
                 }
                 
-                return encrypted;
+                return bytesToHex(encrypted).getBytes();
         }
         
         public byte[] decrypt(String code) throws Exception
@@ -113,7 +113,7 @@ public class MCrypt {
 
         private static String padString(String source)
         {
-          char paddingChar = ' ';
+          char paddingChar = '\0';
           int size = 16;
           int x = source.length() % size;
           int padLength = size - x;
