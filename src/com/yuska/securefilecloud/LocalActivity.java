@@ -16,6 +16,7 @@ import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -142,10 +143,9 @@ public class LocalActivity extends ListActivity {
 		
 			// Enable POST method
 			connection.setRequestMethod("POST");
-		
 			connection.setRequestProperty("Connection", "Keep-Alive");
 			connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
-	
+			
 			outputStream = new DataOutputStream( connection.getOutputStream() );
 			outputStream.writeBytes(twoHyphens + boundary + lineEnd);
 			outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + option.getName() +"\"" + lineEnd);
@@ -157,14 +157,26 @@ public class LocalActivity extends ListActivity {
 	
 			// Read file
 			bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-	
+			String fileStr = "";
+			
 			while (bytesRead > 0) {
 				outputStream.write(buffer, 0, bufferSize);
+				fileStr += new String(buffer);
 				bytesAvailable = fileInputStream.available();
 				bufferSize = Math.min(bytesAvailable, maxBufferSize);
 				bytesRead = fileInputStream.read(buffer, 0, bufferSize);
 			}
-	
+			
+			MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass); //hard coded password right now
+			Log.e("Contents", fileStr);
+			
+			try {
+				//outputStream.writeBytes(new String(mcrypt.encrypt(fileStr)));
+			} catch (Exception e) {
+				//TODO: catch exception
+				return e.getMessage();
+			}
+			
 			outputStream.writeBytes(lineEnd);
 			outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 	
@@ -191,6 +203,7 @@ public class LocalActivity extends ListActivity {
             return out;
 
         } catch (IOException ex) {
+        	Log.e("Error", ex.getLocalizedMessage());
         	return "IO Exception: "+ex.getMessage();
         }
 	}

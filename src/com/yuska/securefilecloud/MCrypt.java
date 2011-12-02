@@ -1,8 +1,11 @@
 package com.yuska.securefilecloud;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -71,8 +74,6 @@ public class MCrypt {
                 }
                 return decrypted;
         }
-        
-
         
         public static String bytesToHex(byte[] data)
         {

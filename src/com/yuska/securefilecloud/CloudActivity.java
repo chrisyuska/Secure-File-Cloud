@@ -2,6 +2,7 @@ package com.yuska.securefilecloud;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.http.util.ByteArrayBuffer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -54,7 +56,7 @@ public class CloudActivity extends ListActivity {
 		protected String doInBackground(String... strings) {
 			String encrypted = XMLfunctions.getXML(strings[0]);
 
-			MCrypt mcrypt = new MCrypt("Buckeyes12345678"); //hard coded password right now
+			MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass); //hard coded password right now
 			
 			try {
 				return new String(mcrypt.decrypt(encrypted));
@@ -143,12 +145,30 @@ public class CloudActivity extends ListActivity {
 		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?user="+SecureFileCloudActivity.user+"&filename=" + options[0].getName());
 		    	InputStream in = fileUrl.openStream();
 		    	OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
-
+		    	
+		    	ByteArrayBuffer buf = new ByteArrayBuffer(1);
 		    	for (int b; (b = in.read()) != -1;) {
-		    		out.write(b);
+		    		buf.append(b);
 		    	}
+		    	MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass);
+		    	
+		    	String encrypted = new String(buf.toByteArray());
+		    	
+		    	try {
+		    		byte[] buffer = mcrypt.decrypt(encrypted);
+		    		//have to check for nulls due to funky padding in mcrypt method
+		    		for (int i = 0; i < buffer.length && buffer[i] != -1 && buffer[i] != 0; i++) {
+		    			out.write(buffer[i]);
+		    		}
+		    		
+		    		//out.write(mcrypt.decrypt(encrypted));
+		    	} catch (Exception e) {
+		    		//Catch exception
+		    	}
+
 		    	out.close();
 		    	in.close();
+
 		    	return "Download Complete";
 		    } catch (MalformedURLException e) {
 		    	newFile = null;
