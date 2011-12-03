@@ -7,6 +7,10 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.http.util.ByteArrayBuffer;
+
+import android.util.Log;
+
 public class MCrypt {
 
         private String iv = "fedcba9876543210";//Dummy iv (CHANGE IT!)
@@ -69,7 +73,14 @@ public class MCrypt {
                 {
                         throw new Exception("[decrypt] " + e.getMessage());
                 }
-                return decrypted;
+                //Remove padding
+                ByteArrayBuffer dec = new ByteArrayBuffer(1);
+                
+                for (int i = 0; i < decrypted.length && decrypted[i] != -1 && decrypted[i] != 0; i++) {
+	    			dec.append(decrypted[i]);
+	    		}
+                
+                return dec.toByteArray();
         }
         
         public static String bytesToHex(byte[] data)
