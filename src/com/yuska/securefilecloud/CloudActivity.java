@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,7 @@ import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -143,7 +146,11 @@ public class CloudActivity extends ListActivity {
 
 		    try {
 		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?user="+SecureFileCloudActivity.user+"&filename=" + new String(mcrypt.encrypt(options[0].getName())));
-		    	InputStream in = fileUrl.openStream();
+		    	URLConnection urlConnection = fileUrl.openConnection();
+		    	
+		    	String hash = urlConnection.getHeaderField("digest");
+		    	
+		    	InputStream in = urlConnection.getInputStream();
 		    	OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
 		    	
 		    	ByteArrayBuffer buf = new ByteArrayBuffer(1);
@@ -152,8 +159,20 @@ public class CloudActivity extends ListActivity {
 		    	}
 		    	
 		    	String encrypted = new String(buf.toByteArray());
+		    	byte[] decrypted = mcrypt.decrypt(encrypted);
 		    	
-		    	out.write(mcrypt.decrypt(encrypted));
+		    	MessageDigest digest = MessageDigest.getInstance("MD5");
+		    	digest.update(decrypted);
+		    	
+		    	String messageDigest = MCrypt.bytesToHex(digest.digest());
+		    	
+		    	if (messageDigest.compareTo(hash) == 0) {
+		    		out.write(decrypted);
+		    	} else {
+		    		//hash doesn't match; integrity is lost
+		    		newFile = null;
+		    		return "Error: Hash doesn't match";
+		    	}
 
 		    	out.close();
 		    	in.close();
@@ -167,6 +186,7 @@ public class CloudActivity extends ListActivity {
 		    	return "IOException: "+e.getMessage();
 		    } catch (Exception e) {
 		    	//Handle mcrypt exception
+		    	newFile = null;
 		    	return "Encryption exception: "+e.getMessage();
 		    }
 		}
