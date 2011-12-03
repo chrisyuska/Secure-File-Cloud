@@ -14,6 +14,7 @@ public class SecureFileCloudActivity extends TabActivity {
 	public static final String PREFS_NAME = "SecureFileCloudPrefs";
 	public static String user;
 	public static String pass;
+	public static int nonce;
 	
     /** Called when the activity is first created. */
     @Override
@@ -25,6 +26,7 @@ public class SecureFileCloudActivity extends TabActivity {
         user = settings.getString("user_preference", "rohit");
         //TODO: get pass from preferences (along with nonce too)
         pass = "Buckeyes12345678"; 
+        nonce = settings.getInt("nonce", 100);
         
         setContentView(R.layout.main);
         

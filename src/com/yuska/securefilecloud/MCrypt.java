@@ -9,8 +9,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.http.util.ByteArrayBuffer;
 
-import android.util.Log;
-
 public class MCrypt {
 
         private String iv = "fedcba9876543210";//Dummy iv (CHANGE IT!)

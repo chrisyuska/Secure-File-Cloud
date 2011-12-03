@@ -20,7 +20,6 @@ import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -191,7 +190,6 @@ public class LocalActivity extends ListActivity {
             return new String(mcrypt.decrypt(out));
 
         } catch (IOException ex) {
-        	Log.e("Error", ex.getLocalizedMessage());
         	return "IO Exception: "+ex.getMessage();
         } catch (Exception e) {
         	//Catch encryption error
