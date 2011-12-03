@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -147,18 +148,22 @@ public class LocalActivity extends ListActivity {
 			connection.setRequestProperty("Connection", "Keep-Alive");
 			connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
 			
-			outputStream = new DataOutputStream( connection.getOutputStream() );
-			outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-			outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + new String(mcrypt.encrypt(option.getName())) +"\"" + lineEnd);
-			outputStream.writeBytes(lineEnd);
-	
 			ByteArrayBuffer buf = new ByteArrayBuffer(1);
 	    	for (int b; (b = fileInputStream.read()) != -1;) {
 	    		buf.append(b);
 	    	}
 	    	
+	    	MessageDigest digest = MessageDigest.getInstance("MD5");
+	    	digest.update(buf.toByteArray());
+	    	String messageDigest = MCrypt.bytesToHex(digest.digest());
 	    	
-	    	
+	    	connection.setRequestProperty("digest", messageDigest);
+			
+			outputStream = new DataOutputStream( connection.getOutputStream() );
+			outputStream.writeBytes(twoHyphens + boundary + lineEnd);
+			outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + new String(mcrypt.encrypt(option.getName())) +"\"" + lineEnd);
+			outputStream.writeBytes(lineEnd);
+
 	    	try {
 	    		outputStream.writeBytes(new String(mcrypt.encrypt(new String(buf.toByteArray()))));
 	    	} catch (Exception e) {
@@ -183,7 +188,6 @@ public class LocalActivity extends ListActivity {
             	out+=line;
             }
             rd.close();
-            
             return new String(mcrypt.decrypt(out));
 
         } catch (IOException ex) {
