@@ -128,6 +128,8 @@ public class LocalActivity extends ListActivity {
 		String twoHyphens = "--";
 		String boundary =  "*****";
 	
+		MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass);
+		
 		try
 		{
 			FileInputStream fileInputStream = new FileInputStream(new File(pathToOurFile) );
@@ -144,9 +146,10 @@ public class LocalActivity extends ListActivity {
 			connection.setRequestMethod("POST");
 			connection.setRequestProperty("Connection", "Keep-Alive");
 			connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
+			
 			outputStream = new DataOutputStream( connection.getOutputStream() );
 			outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-			outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + option.getName() +"\"" + lineEnd);
+			outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + new String(mcrypt.encrypt(option.getName())) +"\"" + lineEnd);
 			outputStream.writeBytes(lineEnd);
 	
 			ByteArrayBuffer buf = new ByteArrayBuffer(1);
@@ -154,10 +157,9 @@ public class LocalActivity extends ListActivity {
 	    		buf.append(b);
 	    	}
 	    	
-	    	MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass);
+	    	
 	    	
 	    	try {
-	    		Log.e("Length",Integer.toString(new String(mcrypt.encrypt(new String(buf.toByteArray()))).length()));
 	    		outputStream.writeBytes(new String(mcrypt.encrypt(new String(buf.toByteArray()))));
 	    	} catch (Exception e) {
 	    		//Catch exception
@@ -181,11 +183,15 @@ public class LocalActivity extends ListActivity {
             	out+=line;
             }
             rd.close();
-            return out;
+            
+            return new String(mcrypt.decrypt(out));
 
         } catch (IOException ex) {
         	Log.e("Error", ex.getLocalizedMessage());
         	return "IO Exception: "+ex.getMessage();
+        } catch (Exception e) {
+        	//Catch encryption error
+        	return "Encryption error: "+e.getMessage();
         }
 	}
 	
