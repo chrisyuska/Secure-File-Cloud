@@ -138,9 +138,11 @@ public class CloudActivity extends ListActivity {
 	private class DownloadFileTask extends AsyncTask<Option, Integer, String> {
 		protected String doInBackground(Option... options) {
 			File newFile = new File("/sdcard/" + options[0].getName());
+			
+			MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass);
 
 		    try {
-		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?user="+SecureFileCloudActivity.user+"&filename=" + options[0].getName());
+		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?user="+SecureFileCloudActivity.user+"&filename=" + new String(mcrypt.encrypt(options[0].getName())));
 		    	InputStream in = fileUrl.openStream();
 		    	OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
 		    	
@@ -148,7 +150,6 @@ public class CloudActivity extends ListActivity {
 		    	for (int b; (b = in.read()) != -1;) {
 		    		buf.append(b);
 		    	}
-		    	MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass);
 		    	
 		    	String encrypted = new String(buf.toByteArray());
 		    	
@@ -174,6 +175,9 @@ public class CloudActivity extends ListActivity {
 		    } catch (IOException e) {
 		    	newFile = null;
 		    	return "IOException: "+e.getMessage();
+		    } catch (Exception e) {
+		    	//Handle mcrypt exception
+		    	return "Encryption exception: "+e.getMessage();
 		    }
 		}
 		protected void onPostExecute(String str) {
