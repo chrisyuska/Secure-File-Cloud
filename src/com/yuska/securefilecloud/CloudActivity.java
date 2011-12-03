@@ -153,17 +153,7 @@ public class CloudActivity extends ListActivity {
 		    	
 		    	String encrypted = new String(buf.toByteArray());
 		    	
-		    	try {
-		    		byte[] buffer = mcrypt.decrypt(encrypted);
-		    		//have to check for nulls due to funky padding in mcrypt method
-		    		for (int i = 0; i < buffer.length && buffer[i] != -1 && buffer[i] != 0; i++) {
-		    			out.write(buffer[i]);
-		    		}
-		    		
-		    		//out.write(mcrypt.decrypt(encrypted));
-		    	} catch (Exception e) {
-		    		//Catch exception
-		    	}
+		    	out.write(mcrypt.decrypt(encrypted));
 
 		    	out.close();
 		    	in.close();
