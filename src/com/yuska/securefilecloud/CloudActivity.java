@@ -216,7 +216,7 @@ public class CloudActivity extends ListActivity {
 		    	String hash = urlConnection.getHeaderField("digest");
 		    	
 		    	//get new nonce
-		    	SecureFileCloudActivity.updateNonce(urlConnection.getHeaderField("nonce"));
+		    	SecureFileCloudActivity.updateNonce(new String(mcrypt.decrypt(urlConnection.getHeaderField("nonce"))));
 		    	
 		    	//open streams for reading/writing file contents
 		    	InputStream in = urlConnection.getInputStream();

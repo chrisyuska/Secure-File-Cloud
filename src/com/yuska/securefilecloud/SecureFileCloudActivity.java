@@ -78,8 +78,6 @@ public class SecureFileCloudActivity extends TabActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        
-        context = this;
 
         // Restore preferences
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -132,6 +130,8 @@ public class SecureFileCloudActivity extends TabActivity {
     	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
     	SharedPreferences.Editor editor = settings.edit();
     	editor.putString("nonce", hash);
+    	
+        editor.commit();
     	
     	nonce = settings.getString("nonce", hash);
     }

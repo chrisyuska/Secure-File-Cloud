@@ -215,6 +215,9 @@ public class LocalActivity extends ListActivity {
 	    	
 	    	//add message digest to form headers
 	    	connection.setRequestProperty("digest", messageDigest);
+	    	
+	    	//add nonce
+	    	connection.setRequestProperty("nonce", new String(mcrypt.encrypt(SecureFileCloudActivity.nonce)));
 			
 	    	//write file-portion of http form
 			outputStream = new DataOutputStream( connection.getOutputStream() );
@@ -251,9 +254,14 @@ public class LocalActivity extends ListActivity {
             	out+=line;
             }
             rd.close();
-            
+
             //decrypt and return message from server
-            return new String(mcrypt.decrypt(out));
+            out = new String(mcrypt.decrypt(out));
+            
+            String hash = out.substring(out.length()-32);
+            out = out.substring(0, out.length()-32);
+            SecureFileCloudActivity.updateNonce(hash);
+            return out;
 
         } catch (IOException ex) {
         	return "IO Exception: "+ex.getMessage();
