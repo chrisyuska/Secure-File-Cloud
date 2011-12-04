@@ -21,9 +21,19 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-
+/**
+ * XMLfunctions is a utility class containing all necessary functions for obtaining and parsing XML feed from server.
+ * 
+ * @author Chris Yuska
+ *
+ */
 public class XMLfunctions {
 
+	/** Creates and returns XML document from XML-formatted string
+	 * 
+	 * @param xml string to be parsed as XML
+	 * @return Document comprised of data from input XML string.
+	 */
 	public final static Document XMLfromString(String xml){
 		
 		Document doc = null;
@@ -69,7 +79,12 @@ public class XMLfunctions {
 	     }
 	     return "";
 	 }
-		 
+	 
+	 /** Retrieves XML feed (as a String) from web server.
+	  * 
+	  * @param user user for which to encrypt XML feed retrieved
+	  * @return encrypted XML feed
+	  */
 	 public static String getXML(String user){
 			String line = null;
 
@@ -91,7 +106,12 @@ public class XMLfunctions {
 
 			return line;
 	}
-	 
+	
+	 /** Returns the number of results in the XML document.
+	  * 
+	  * @param doc the Document to count results in
+	  * @return number of results in doc 
+	  */
 	public static int numResults(Document doc){		
 		Node results = doc.getDocumentElement();
 		int res = -1;
@@ -105,6 +125,12 @@ public class XMLfunctions {
 		return res;
 	}
 
+	/** Returns the value of an element (in our case, the file name).
+	 * 
+	 * @param item Document Element to get value from
+	 * @param str the tag name within the element to obtain value for
+	 * @return value of Element within the provided Element, asked for by name str
+	 */
 	public static String getValue(Element item, String str) {		
 		NodeList n = item.getElementsByTagName(str);		
 		return XMLfunctions.getElementValue(n.item(0));

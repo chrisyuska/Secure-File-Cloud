@@ -9,15 +9,24 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.http.util.ByteArrayBuffer;
 
+/**
+ * MCrypt is a wrapper for encrypting/decrypting using the Java Crypto library.
+ * 
+ * @author Chris Yuska 
+ * 
+ * (Originally obtained from AndroidSnippets.com, fixed and modified for our purposes.)
+ *
+ */
 public class MCrypt {
 
-        private String iv = "fedcba9876543210";//Dummy iv (CHANGE IT!)
+        private String iv = "fedcba9876543210";
         private IvParameterSpec ivspec;
         private SecretKeySpec keyspec;
         private Cipher cipher;
         
-        private String SecretKey; // = "0123456789abcdef";//Dummy secretKey (CHANGE IT!)
+        private String SecretKey;
         
+        //Initializes Cipher with SecretKey
         public MCrypt(String password)
         {
         		SecretKey = password;
@@ -29,10 +38,8 @@ public class MCrypt {
                 try {
                         cipher = Cipher.getInstance("AES/CBC/NoPadding");
                 } catch (NoSuchAlgorithmException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                 } catch (NoSuchPaddingException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                 }
         }
@@ -71,6 +78,7 @@ public class MCrypt {
                 {
                         throw new Exception("[decrypt] " + e.getMessage());
                 }
+                
                 //Remove padding
                 ByteArrayBuffer dec = new ByteArrayBuffer(1);
                 

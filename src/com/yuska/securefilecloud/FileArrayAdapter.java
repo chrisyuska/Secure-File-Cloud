@@ -9,6 +9,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+/**
+ * Utility class for dealing with list views within tabs.
+ * 
+ * @author Chris Yuska
+ *
+ */
 public class FileArrayAdapter extends ArrayAdapter<Option>{
 
 	private Context c;
@@ -27,6 +33,7 @@ public class FileArrayAdapter extends ArrayAdapter<Option>{
 	 {
 		 return items.get(i);
 	 }
+	
 	 @Override
       public View getView(int position, View convertView, ViewGroup parent) {
               View v = convertView;

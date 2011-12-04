@@ -1,5 +1,11 @@
 package com.yuska.securefilecloud;
 
+/**
+ * Wraps files for selection and manipulation within list views.
+ * 
+ * @author Chris Yuska
+ *
+ */
 public class Option implements Comparable<Option>{
     private String name;
     private String data;

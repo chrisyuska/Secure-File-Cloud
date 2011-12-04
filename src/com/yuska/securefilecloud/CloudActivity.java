@@ -28,81 +28,131 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+/**
+ * CloudActivity handles all functionality for dealing with cloud files (getting list and downloading).
+ * 
+ * @author Chris Yuska
+ *
+ */
 public class CloudActivity extends ListActivity {
 	private FileArrayAdapter adapter;
 	private Toast dlg;
 	private Option o;
 	
+	/**
+	 * On activity creation, get file list (from xml feed).
+	 */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
        
+        //get feed for current user
         getXML(SecureFileCloudActivity.user);
     }
     
+    /**
+     * On resume, get file list (no different from first load).
+     */
     @Override
     protected void onResume() {
         super.onResume();
 
+        //get feed for current user
         getXML(SecureFileCloudActivity.user);
     }
     
+    /**
+     * Basic function for enabling ability both to call FillTask and show toast. 
+     * 
+     * @param user user for which to obtain file list for
+     */
     private void getXML(String user) {
+    	// create and show status text
     	dlg = Toast.makeText(this, "Downloading list...", Toast.LENGTH_SHORT);
     	dlg.show();
+    	
+    	// Download file list and fill list view (in new thread)
     	new FillTask().execute(user);
     }
     
+    /**
+     * Class for asynchronously downloading and parsing XML separately from UI.
+     * 
+     * @author Chris Yuska
+     *
+     */
     private class FillTask extends AsyncTask<String, Integer, String> {
 		protected String doInBackground(String... strings) {
+			//get encrypted xml feed
 			String encrypted = XMLfunctions.getXML(strings[0]);
-
-			MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass); //hard coded password right now
 			
+			//create new MCrypt instance based on current user
+			MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass);
+			
+			//return decrypted XML feed
 			try {
 				return new String(mcrypt.decrypt(encrypted));
 			} catch (Exception e) {
-				//TODO: catch exception
 				return e.getMessage();
 			}
 		}
+		
+		//On return from downloading/decrypting xml feed, fill list view with files
 		protected void onPostExecute(String xml) {
 			fill(xml);
-			//bug: cancel only registers after first time populating for some reason
+			
+			//close downloading... toast dialog
+			//TODO: bug: cancel only registers after first time populating for some reason
 			dlg.cancel();
 		}
     }
     
+    /**
+     * Fill list view based on xml provided.
+     * 
+     * @param xml XML feed to parse for files
+     */
     private void fill(String xml){
     	List<Option>fls = new ArrayList<Option>();
     	
+    	//parse XML feed into XML Document
         Document doc = XMLfunctions.XMLfromString(xml);
         
         try {
 		    int numResults = XMLfunctions.numResults(doc);
 		    
+		    //if no results, just output XML for debugging for now
 		    if((numResults <= 0)){
 		    	dlg.cancel();
 		    	Toast.makeText(this, xml, Toast.LENGTH_LONG).show();
 		    }
-		            
+		    
+		    //get all results from Document
 			NodeList nodes = doc.getElementsByTagName("result");
-						
-			for (int i = 0; i < nodes.getLength(); i++) {							
+			
+			//for each result...
+			for (int i = 0; i < nodes.getLength(); i++) {
 				Element e = (Element)nodes.item(i);
 		    	
+				//add file listing to file array
 		    	fls.add(new Option(XMLfunctions.getValue(e, "name"),"File Size: "+XMLfunctions.getValue(e, "size")+" bytes",XMLfunctions.getValue(e, "location")));
 			}
 			
+			//sort files alphabetically
 			Collections.sort(fls);
 			
+			//set adapter for displaying files
 			adapter = new FileArrayAdapter(CloudActivity.this,R.layout.file_view,fls);
 			this.setListAdapter(adapter);
         } catch (Exception e) {
+        	//catch exception
         	dlg.cancel();
 	    	Toast.makeText(this, "There was an error parsing the xml", Toast.LENGTH_LONG).show();
         }
     }
     
+    /**
+     * On click of item (file), deal with regular click right now.
+     */
     @Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
@@ -110,6 +160,9 @@ public class CloudActivity extends ListActivity {
 		onFileClick();
 	}
 
+    /**
+     * On short press of file, download file. 
+     */
 	private void onFileClick()
     {
 		//Just creating Toast for now until we actually download files
@@ -122,7 +175,9 @@ public class CloudActivity extends ListActivity {
 		       .setCancelable(false)
 		       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 		           public void onClick(DialogInterface dialog, int id) {
+		        	   //show Toast for showing progress
 		        	   dlg.show();
+		        	   //start new thread for downloading file
 		        	   new DownloadFileTask().execute(o);
 		           }
 		       })
@@ -137,45 +192,64 @@ public class CloudActivity extends ListActivity {
 		alert.show();
     }
 	
+	/**
+	 * Asychronously download file in background, separate from UI.
+	 * 
+	 * @author Chris Yuska
+	 *
+	 */
 	private class DownloadFileTask extends AsyncTask<Option, Integer, String> {
 		protected String doInBackground(Option... options) {
+			//Create new File for storing data
 			File newFile = new File("/sdcard/" + options[0].getName());
 			
+			//Create instance of MCrypt based on current user's password
 			MCrypt mcrypt = new MCrypt(SecureFileCloudActivity.pass);
 
 		    try {
+		    	//Start connection...
 		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?user="+SecureFileCloudActivity.user+"&filename=" + new String(mcrypt.encrypt(options[0].getName())));
 		    	URLConnection urlConnection = fileUrl.openConnection();
 		    	
+		    	//get message digest for comparing later
 		    	String hash = urlConnection.getHeaderField("digest");
 		    	
+		    	//open streams for reading/writing file contents
 		    	InputStream in = urlConnection.getInputStream();
 		    	OutputStream out = new BufferedOutputStream(new FileOutputStream(newFile));
 		    	
+		    	//read file contents into buffer
 		    	ByteArrayBuffer buf = new ByteArrayBuffer(1);
 		    	for (int b; (b = in.read()) != -1;) {
 		    		buf.append(b);
 		    	}
 		    	
+		    	//put file contents into new string from buffer
 		    	String encrypted = new String(buf.toByteArray());
+		    	
+		    	//decrypt file contents into new buffer
 		    	byte[] decrypted = mcrypt.decrypt(encrypted);
 		    	
+		    	//get message digest of decrypted file contents
 		    	MessageDigest digest = MessageDigest.getInstance("MD5");
 		    	digest.update(decrypted);
 		    	
 		    	String messageDigest = MCrypt.bytesToHex(digest.digest());
 		    	
+		    	//if message digests match, then integrity kept. store file contents
 		    	if (messageDigest.compareTo(hash) == 0) {
 		    		out.write(decrypted);
 		    	} else {
-		    		//hash doesn't match; integrity is lost
+		    		//otherwise, hash doesn't match; integrity is lost
 		    		newFile = null;
 		    		return "Error: Hash doesn't match";
 		    	}
 
+		    	//close connections
 		    	out.close();
 		    	in.close();
 
+		    	//return download status
 		    	return "Download Complete";
 		    } catch (MalformedURLException e) {
 		    	newFile = null;
@@ -189,9 +263,16 @@ public class CloudActivity extends ListActivity {
 		    	return "Encryption exception: "+e.getMessage();
 		    }
 		}
+		
+		//on finish of download, deal with UI
 		protected void onPostExecute(String str) {
+			//set new toast text to download status
 			dlg.setText(str);
+			
+			//set new duration to display
 			dlg.setDuration(Toast.LENGTH_SHORT);
+			
+			//show new toast dialog to user
 			dlg.show();
 		}
 	}

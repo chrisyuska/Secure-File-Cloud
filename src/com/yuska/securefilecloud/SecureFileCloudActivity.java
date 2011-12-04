@@ -10,6 +10,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TabHost;
 
+/**
+ * SecureFileCloudActivity wraps the two tab activities in the application.  It 
+ * handles initialization and menu actions.
+ * 
+ * @author Chris Yuska
+ *
+ */
 public class SecureFileCloudActivity extends TabActivity {
 	public static final String PREFS_NAME = "SecureFileCloudPrefs";
 	public static String user;
@@ -59,14 +66,15 @@ public class SecureFileCloudActivity extends TabActivity {
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+    	//On press of device's menu button, create menu
+    	MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.settings_menu, menu);
         return true;
     }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
+        // Handle item selection within menu
         switch (item.getItemId()) {
         case R.id.settings:
             openSettings();
