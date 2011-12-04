@@ -208,11 +208,15 @@ public class CloudActivity extends ListActivity {
 
 		    try {
 		    	//Start connection...
-		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?user="+SecureFileCloudActivity.user+"&filename=" + new String(mcrypt.encrypt(options[0].getName())));
+		    	URL fileUrl = new URL("http://chrisyuska.com/cse651/download.php?user="+SecureFileCloudActivity.user+"&filename=" + new String(mcrypt.encrypt(options[0].getName()))+
+		    			"&nonce="+new String(mcrypt.encrypt(SecureFileCloudActivity.nonce)));
 		    	URLConnection urlConnection = fileUrl.openConnection();
 		    	
 		    	//get message digest for comparing later
 		    	String hash = urlConnection.getHeaderField("digest");
+		    	
+		    	//get new nonce
+		    	SecureFileCloudActivity.updateNonce(urlConnection.getHeaderField("nonce"));
 		    	
 		    	//open streams for reading/writing file contents
 		    	InputStream in = urlConnection.getInputStream();

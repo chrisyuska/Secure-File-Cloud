@@ -1,6 +1,10 @@
 package com.yuska.securefilecloud;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import android.app.TabActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -21,19 +25,37 @@ public class SecureFileCloudActivity extends TabActivity {
 	public static final String PREFS_NAME = "SecureFileCloudPrefs";
 	public static String user;
 	public static String pass;
-	public static int nonce;
+	public static String nonce;
+	private static Context context;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        context = this;
+        
         // Restore preferences
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         user = settings.getString("user_preference", "rohit");
-        //TODO: get pass from preferences (along with nonce too)
-        pass = "Buckeyes12345678"; 
-        nonce = settings.getInt("nonce", 100);
+        
+        //TODO: get pass from preferences, should be separated by user
+        pass = "Buckeyes12345678";
+        
+        //initial nonce
+        String hash = "0123456789abcdef";
+        
+        //get initial nonce value (hash of current hash)
+        //TODO: should be threaded, separated by user
+        try {
+        	MessageDigest digest = MessageDigest.getInstance("MD5");
+        	digest.update(hash.getBytes());
+        	hash = MCrypt.bytesToHex(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+        	//Catch exception
+        }
+        
+        nonce = settings.getString("nonce", hash);
         
         setContentView(R.layout.main);
         
@@ -56,12 +78,28 @@ public class SecureFileCloudActivity extends TabActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        
+        context = this;
 
         // Restore preferences
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         user = settings.getString("user_preference", "rohit");
         //TODO: get pass from preferences (along with nonce too)
-        pass = "Buckeyes12345678"; 
+        pass = "Buckeyes12345678";
+        
+        //initial nonce
+        String hash = "0123456789abcdef";
+        
+        //get initial nonce value (hash of current hash)
+        //TODO: should be threaded, separated by user
+        try {
+        	MessageDigest digest = MessageDigest.getInstance("MD5");
+        	digest.update(hash.getBytes());
+        	hash = MCrypt.bytesToHex(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+        	//Catch exception
+        }
+        nonce = settings.getString("nonce", hash);
     }
     
     @Override
@@ -88,5 +126,13 @@ public class SecureFileCloudActivity extends TabActivity {
         // Create an Intent for the Settings Activity
     	Intent intent = new Intent(this, Settings.class);
     	startActivity(intent);
+    }
+    
+    public static void updateNonce(String hash) {
+    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+    	SharedPreferences.Editor editor = settings.edit();
+    	editor.putString("nonce", hash);
+    	
+    	nonce = settings.getString("nonce", hash);
     }
 }
